@@ -411,7 +411,7 @@ export default function AskLumiraPage() {
   const pendingQuery   = useRef<string | null>(null);
 
   // Paywall — use a ref so the count is always fresh inside useCallback closures
-  const FREE_QUESTIONS   = 3;
+  const FREE_QUESTIONS   = 5;
   const questionCountRef = useRef(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
@@ -653,30 +653,6 @@ export default function AskLumiraPage() {
               hiddenActions={hiddenActions}
               disabledActions={disabledActions}
               {...(spotterQuery ? { searchOptions: { searchQuery: spotterQuery } } : {})}
-              customizations={{
-                style: {
-                  customCSS: {
-                    rules_UNSTABLE: {
-                      /* Hide the Spotter input bar — questions come from the right panel */
-                      '[data-testid="spotter-input-box"]': { display: 'none !important' },
-                      '[class*="inputContainer"]':          { display: 'none !important' },
-                      '[class*="QueryBox"]':                { display: 'none !important' },
-                      '[class*="queryBox"]':                { display: 'none !important' },
-                      '[class*="input-area"]':              { display: 'none !important' },
-                      '[class*="InputArea"]':               { display: 'none !important' },
-                      '[class*="spotterFooter"]':           { display: 'none !important' },
-                      '[class*="SpotterFooter"]':           { display: 'none !important' },
-                      '[class*="conversation-input"]':      { display: 'none !important' },
-                      '[class*="ConversationInput"]':       { display: 'none !important' },
-                      '[class*="chatInput"]':               { display: 'none !important' },
-                      '[class*="ChatInput"]':               { display: 'none !important' },
-                      '[class*="footerContainer"]':         { display: 'none !important' },
-                      '[class*="FooterContainer"]':         { display: 'none !important' },
-                      '[placeholder="Enter your question"]':{ display: 'none !important' },
-                    } as any,
-                  },
-                },
-              }}
               style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
             />
           )}

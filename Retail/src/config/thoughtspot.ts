@@ -400,6 +400,7 @@ export function buildThoughtSpotEmbedConfig(): EmbedConfig {
   return {
     thoughtSpotHost,
     authType: AuthType.None,
+    redirectPath: window.location.pathname,
     suppressSearchEmbedBetaWarning: true,
     customizations: {
       iconSpriteUrl: "https://cdn.jsdelivr.net/gh/CamTS256/icon-store/robot11.svg",
