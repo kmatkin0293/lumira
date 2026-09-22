@@ -15,17 +15,7 @@ const BLUE    = '#2B3CC1';
 const NAVY    = '#0F1875';
 
 // ─── Paywall config ───────────────────────────────────────────────────────────
-const SESSION_KEY     = 'oc_ai_questions_answered';
 const FREE_QUESTIONS  = 4;   // number of free answers before paywall kicks in
-
-function getAnsweredCount(): number {
-  return parseInt(sessionStorage.getItem(SESSION_KEY) ?? '0', 10);
-}
-function incrementAnsweredCount(): number {
-  const next = getAnsweredCount() + 1;
-  sessionStorage.setItem(SESSION_KEY, String(next));
-  return next;
-}
 
 // ─── Upgrade modal (Pay Now / Schedule Meeting) ───────────────────────────────
 
@@ -425,8 +415,8 @@ export default function Analytics() {
   const pendingChip  = useRef<string | null>(null);
   const [activeChip, setActiveChip] = useState<string | null>(null);
 
-  // ── Paywall state ─────────────────────────────────────────────────────────
-  const [answeredCount, setAnsweredCount] = useState<number>(getAnsweredCount);
+  // ── Paywall state — resets to 0 on every fresh page load ─────────────────
+  const [answeredCount, setAnsweredCount] = useState<number>(0);
   const [showPaywall,   setShowPaywall]   = useState<boolean>(false);
   const [showUpgrade,   setShowUpgrade]   = useState<boolean>(false);
   const [dismissed,     setDismissed]     = useState<boolean>(false); // "Maybe later" for this session
@@ -439,8 +429,7 @@ export default function Analytics() {
 
   // Called when SpotterEmbed returns data — i.e. a question was answered
   const handleData = useCallback((_payload: any) => {
-    const newCount = incrementAnsweredCount();
-    setAnsweredCount(newCount);
+    setAnsweredCount(prev => prev + 1);
   }, []);
 
   const handleRefresh = () => {
