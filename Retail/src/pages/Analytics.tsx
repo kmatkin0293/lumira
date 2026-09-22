@@ -496,6 +496,38 @@ export default function Analytics() {
             <TabCard active={tab === 'explore'} title="Explore Data" subtitle="Build custom commerce queries" onClick={() => setTab('explore')} />
           </div>
         </div>
+
+        {/* Sample question chips — Lumira AI tab only */}
+        {tab === 'stella' && spotterEnabled && (
+          <div style={{ backgroundColor: BG, padding: '0.5rem 2rem 0.6rem', borderTop: '1px solid rgba(43,60,193,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: LABEL, letterSpacing: '0.04em', textTransform: 'uppercase', marginRight: 4, whiteSpace: 'nowrap' }}>Try:</span>
+            {[
+              'units sold by channel',
+              'top categories by net revenue',
+              'quantity on hand by brand',
+              'net revenue this month vs last month',
+              'sell through rate by category',
+              'products with low stock and high sell through rate',
+            ].map(q => (
+              <button
+                key={q}
+                type="button"
+                onClick={() => setSelectedPrompt(q)}
+                style={{
+                  padding: '5px 12px', borderRadius: 16,
+                  border: `1px solid ${selectedPrompt === q ? BLUE : 'rgba(43,60,193,0.18)'}`,
+                  backgroundColor: selectedPrompt === q ? BLUE : '#FFFFFF',
+                  color: selectedPrompt === q ? '#FFFFFF' : NAVY,
+                  fontSize: 12, fontWeight: selectedPrompt === q ? 600 : 400,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  transition: 'all 0.12s',
+                }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* ── Content area ── */}
