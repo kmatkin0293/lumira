@@ -416,7 +416,7 @@ export function buildThoughtSpotEmbedConfig(): EmbedConfig {
           'Meet Iris, your AI analyst': 'Meet Lumira AI, your commerce analyst',
           'Iris is your AI analyst. It can answer questions you have about your data source and help you find insights quickly.\n To start analysing, ask a business question about your data.': 'Lumira AI can answer questions about your sales and channel data and surface insights instantly.\n To start, ask a business question about your data.',
           'AI Highlights': 'Highlights',
-          Pin: 'Pin',
+          Pin: 'Add to Dashboard',
         },
       },
     },
