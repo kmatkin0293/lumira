@@ -15,7 +15,7 @@ const BLUE    = '#2B3CC1';
 const NAVY    = '#0F1875';
 
 // ─── Paywall config ───────────────────────────────────────────────────────────
-const FREE_QUESTIONS  = 4;   // number of free answers before paywall kicks in
+const FREE_QUESTIONS  = 5;   // number of free answers before paywall kicks in
 
 // ─── Upgrade modal (Pay Now / Schedule Meeting) ───────────────────────────────
 
