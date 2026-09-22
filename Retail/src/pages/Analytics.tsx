@@ -419,8 +419,10 @@ export default function Analytics() {
   const [tab, setTab]                   = useState<TabId>('stella');
   const [selectedPrompt, setSelectedPrompt] = useState<string | undefined>(undefined);
   const { hiddenActions, disabledActions, spotterEnabled, setTier } = useTier();
-  const spotterRef = useRef<any>(null);
-  const searchRef  = useRef<any>(null);
+  const spotterRef   = useRef<any>(null);
+  const searchRef    = useRef<any>(null);
+  const spotterReady = useRef(false);
+  const [activeChip, setActiveChip] = useState<string | null>(null);
 
   // ── Paywall state ─────────────────────────────────────────────────────────
   const [answeredCount, setAnsweredCount] = useState<number>(getAnsweredCount);
@@ -446,6 +448,19 @@ export default function Analytics() {
       else searchRef.current?.trigger(HostEvent.Reload);
     } catch (e) {
       console.warn('Reload trigger', e);
+    }
+  };
+
+  const handleChip = (q: string) => {
+    setActiveChip(q);
+    if (!selectedPrompt) {
+      // First question — mount Spotter with it via searchOptions
+      setSelectedPrompt(q);
+    } else if (spotterReady.current && spotterRef.current) {
+      // Subsequent questions — keep conversation alive
+      spotterRef.current.trigger(HostEvent.SpotterSearch, { query: q, executeSearch: true });
+    } else {
+      setSelectedPrompt(q);
     }
   };
 
@@ -497,56 +512,27 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Sample question chips — Lumira AI tab only */}
-        {tab === 'stella' && spotterEnabled && (
-          <div style={{ backgroundColor: BG, padding: '0.5rem 2rem 0.6rem', borderTop: '1px solid rgba(43,60,193,0.07)', display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: LABEL, letterSpacing: '0.04em', textTransform: 'uppercase', marginRight: 4, whiteSpace: 'nowrap' }}>Try:</span>
-            {[
-              'units sold by channel',
-              'top categories by net revenue',
-              'quantity on hand by brand',
-              'net revenue this month vs last month',
-              'sell through rate by category',
-              'products with low stock and high sell through rate',
-            ].map(q => (
-              <button
-                key={q}
-                type="button"
-                onClick={() => setSelectedPrompt(q)}
-                style={{
-                  padding: '5px 12px', borderRadius: 16,
-                  border: `1px solid ${selectedPrompt === q ? BLUE : 'rgba(43,60,193,0.18)'}`,
-                  backgroundColor: selectedPrompt === q ? BLUE : '#FFFFFF',
-                  color: selectedPrompt === q ? '#FFFFFF' : NAVY,
-                  fontSize: 12, fontWeight: selectedPrompt === q ? 600 : 400,
-                  cursor: 'pointer', whiteSpace: 'nowrap',
-                  transition: 'all 0.12s',
-                }}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* ── Content area ── */}
-      <div style={{ padding: '0.75rem 2rem', flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'column', backgroundColor: BG, overflow: 'hidden' }}>
+      <div style={{ padding: '0.75rem 2rem', flex: '1 1 0', minHeight: 0, display: 'flex', flexDirection: 'row', gap: '1rem', backgroundColor: BG, overflow: 'hidden' }}>
         {tab === 'stella' && !spotterEnabled ? (
           <IrisUpgrade onUpgrade={() => setShowUpgrade(true)} />
         ) : (
-          <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', backgroundColor: '#FFFFFF', borderRadius: 10, overflow: 'hidden', boxShadow: '0 2px 16px rgba(43,60,193,0.10)', border: '1px solid rgba(43,60,193,0.12)' }}>
+          <>
+            {/* Spotter / Search embed */}
+            <div style={{ flex: '1 1 0', minHeight: 0, position: 'relative', backgroundColor: '#FFFFFF', borderRadius: 10, overflow: 'hidden', boxShadow: '0 2px 16px rgba(43,60,193,0.10)', border: '1px solid rgba(43,60,193,0.12)' }}>
             <div style={{ position: 'absolute', inset: 0 }}>
               {tab === 'stella' && spotterEnabled && (
                 <SpotterEmbed
-                  key={selectedPrompt ?? 'stella-default'}
+                  key="stella-persistent"
                   ref={spotterRef}
                   worksheetId={THOUGHTSPOT_MODEL_ID}
                   onError={onError}
                   onData={handleData as any}
+                  onLoad={() => { spotterReady.current = true; }}
                   hideSampleQuestions={!selectedPrompt}
                   updatedSpotterChatPrompt
-                  spotterSidebarConfig={{ enablePastConversationsSidebar: true }}
                   {...(selectedPrompt ? { searchOptions: { searchQuery: selectedPrompt } } : {})}
                   style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                 />
@@ -615,6 +601,64 @@ export default function Analytics() {
               </div>
             )}
           </div>
+
+            {/* Right panel — sample questions (Lumira AI tab only) */}
+            {tab === 'stella' && spotterEnabled && (
+              <div style={{
+                width: 210, flexShrink: 0,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 10,
+                border: '1px solid rgba(43,60,193,0.12)',
+                boxShadow: '0 2px 16px rgba(43,60,193,0.08)',
+                display: 'flex', flexDirection: 'column',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  padding: '12px 14px 8px',
+                  borderBottom: '1px solid rgba(43,60,193,0.08)',
+                  fontSize: 10.5, fontWeight: 700,
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: LABEL,
+                }}>
+                  Suggested questions
+                </div>
+                <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', flex: 1 }}>
+                  {[
+                    { label: 'Units sold by channel',          q: 'units sold by channel' },
+                    { label: 'Top categories by revenue',       q: 'top categories by net revenue' },
+                    { label: 'Inventory by brand',              q: 'quantity on hand by brand' },
+                    { label: 'Revenue vs last month',           q: 'net revenue this month vs last month' },
+                    { label: 'Sell-through by category',        q: 'sell through rate by category' },
+                    { label: 'Products needing restock',        q: 'products with low stock and high sell through rate' },
+                    { label: 'Return rate by category',         q: 'return rate by category' },
+                    { label: 'Net margin by brand',             q: 'net margin by brand' },
+                  ].map(({ label, q }) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => handleChip(q)}
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: 7,
+                        border: `1px solid ${activeChip === q ? BLUE : 'rgba(43,60,193,0.14)'}`,
+                        backgroundColor: activeChip === q ? BLUE : 'transparent',
+                        color: activeChip === q ? '#FFFFFF' : NAVY,
+                        fontSize: 12.5,
+                        fontWeight: activeChip === q ? 600 : 400,
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        lineHeight: 1.35,
+                        transition: 'all 0.12s',
+                        width: '100%',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
