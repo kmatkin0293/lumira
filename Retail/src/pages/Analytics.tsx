@@ -452,7 +452,16 @@ export default function Analytics() {
     }
   };
 
-  const handleChip = (q: string) => {
+  // Stable onLoad handler — must NOT be inline or the SDK re-inits the iframe on every re-render
+  const handleSpotterLoad = useCallback(() => {
+    spotterReady.current = true;
+    if (pendingChip.current && spotterRef.current) {
+      spotterRef.current.trigger(HostEvent.SpotterSearch, { query: pendingChip.current, executeSearch: true });
+      pendingChip.current = null;
+    }
+  }, []);
+
+  const handleChip = useCallback((q: string) => {
     setActiveChip(q);
     if (spotterReady.current && spotterRef.current) {
       // Embed ready — fire directly, keeps conversation alive
@@ -461,7 +470,7 @@ export default function Analytics() {
       // Embed not ready yet — queue it for onLoad
       pendingChip.current = q;
     }
-  };
+  }, []);
 
   // Questions left to show in modal (0 = already over limit)
   const questionsLeft = Math.max(0, FREE_QUESTIONS - answeredCount);
@@ -529,13 +538,7 @@ export default function Analytics() {
                   worksheetId={THOUGHTSPOT_MODEL_ID}
                   onError={onError}
                   onData={handleData as any}
-                  onLoad={() => {
-                    spotterReady.current = true;
-                    if (pendingChip.current && spotterRef.current) {
-                      spotterRef.current.trigger(HostEvent.SpotterSearch, { query: pendingChip.current, executeSearch: true });
-                      pendingChip.current = null;
-                    }
-                  }}
+                  onLoad={handleSpotterLoad}
                   hideSampleQuestions={false}
                   updatedSpotterChatPrompt
                   style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
