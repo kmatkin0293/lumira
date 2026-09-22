@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #F0F2FF;
+  color: #1f2124;
+  letter-spacing: -0.005em;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+:root {
+  /* Lumira brand palette */
+  --xs-blue:          #2B3CC1;
+  --xs-blue-dark:     #1E2FA8;
+  --xs-blue-light:    rgba(43, 60, 193, 0.08);
+  --xs-blue-hover:    rgba(43, 60, 193, 0.14);
+  --xs-navy:          #0F1875;
+  --xs-navy-2:        #0A1260;
+  --xs-bg:            #FFFFFF;
+  --xs-bg-2:          #F0F2FF;
+  --xs-text:          #1f2124;
+  --xs-text-2:        #515962;
+  --xs-text-muted:    rgba(31, 33, 36, 0.45);
+  --xs-border:        rgba(0, 0, 0, 0.09);
+  --xs-border-strong: rgba(0, 0, 0, 0.18);
+  /* Sidebar */
+  --xs-sidebar-bg:    #0F1875;
+  --xs-sidebar-text:  #e8eef8;
+}
