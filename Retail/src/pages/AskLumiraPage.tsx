@@ -644,6 +644,19 @@ export default function AskLumiraPage() {
             hideSampleQuestions
             hiddenActions={hiddenActions}
             disabledActions={disabledActions}
+            customizations={{
+              style: {
+                customCSS: {
+                  rules_UNSTABLE: {
+                    // Hide the Spotter built-in input bar — questions come from the right panel
+                    '[class*="ChatInput"]':   { display: 'none !important' },
+                    '[class*="chatInput"]':   { display: 'none !important' },
+                    '[class*="InputEditor"]': { display: 'none !important' },
+                    '[class*="inputEditor"]': { display: 'none !important' },
+                  },
+                },
+              },
+            }}
             style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
           />
         </div>
