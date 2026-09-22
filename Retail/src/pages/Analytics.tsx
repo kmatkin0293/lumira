@@ -422,6 +422,7 @@ export default function Analytics() {
   const spotterRef   = useRef<any>(null);
   const searchRef    = useRef<any>(null);
   const spotterReady = useRef(false);
+  const pendingChip  = useRef<string | null>(null);
   const [activeChip, setActiveChip] = useState<string | null>(null);
 
   // ── Paywall state ─────────────────────────────────────────────────────────
@@ -453,14 +454,12 @@ export default function Analytics() {
 
   const handleChip = (q: string) => {
     setActiveChip(q);
-    if (!selectedPrompt) {
-      // First question — mount Spotter with it via searchOptions
-      setSelectedPrompt(q);
-    } else if (spotterReady.current && spotterRef.current) {
-      // Subsequent questions — keep conversation alive
+    if (spotterReady.current && spotterRef.current) {
+      // Embed ready — fire directly, keeps conversation alive
       spotterRef.current.trigger(HostEvent.SpotterSearch, { query: q, executeSearch: true });
     } else {
-      setSelectedPrompt(q);
+      // Embed not ready yet — queue it for onLoad
+      pendingChip.current = q;
     }
   };
 
@@ -530,10 +529,15 @@ export default function Analytics() {
                   worksheetId={THOUGHTSPOT_MODEL_ID}
                   onError={onError}
                   onData={handleData as any}
-                  onLoad={() => { spotterReady.current = true; }}
-                  hideSampleQuestions={!selectedPrompt}
+                  onLoad={() => {
+                    spotterReady.current = true;
+                    if (pendingChip.current && spotterRef.current) {
+                      spotterRef.current.trigger(HostEvent.SpotterSearch, { query: pendingChip.current, executeSearch: true });
+                      pendingChip.current = null;
+                    }
+                  }}
+                  hideSampleQuestions={false}
                   updatedSpotterChatPrompt
-                  {...(selectedPrompt ? { searchOptions: { searchQuery: selectedPrompt } } : {})}
                   style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                 />
               )}
