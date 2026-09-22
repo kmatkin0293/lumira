@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react'; // eslint-disable-line
 import { SpotterEmbed } from '@thoughtspot/visual-embed-sdk/react';
 import { HostEvent } from '@thoughtspot/visual-embed-sdk';
 import { THOUGHTSPOT_MODEL_ID, TOP_HEADER_PX } from '../config/thoughtspot';
@@ -404,11 +404,11 @@ export default function AskLumiraPage() {
   const { hiddenActions, disabledActions, spotterEnabled } = useTier();
 
   // Spotter state (left panel)
-  const [spotterQuery,  setSpotterQuery]  = useState<string | null>(null);
+  // spotterActive = user has sent at least one data question (show the embed area)
   const [spotterActive, setSpotterActive] = useState(false);
-  const [spotterReady,  setSpotterReady]  = useState(false);
-  const spotterRef     = useRef<any>(null);
-  const pendingQuery   = useRef<string | null>(null);
+  const spotterRef    = useRef<any>(null);
+  const spotterReady  = useRef(false);       // ref, not state — avoids stale closures
+  const pendingQuery  = useRef<string | null>(null);
 
   // Paywall — use a ref so the count is always fresh inside useCallback closures
   const FREE_QUESTIONS   = 5;
@@ -430,9 +430,9 @@ export default function AskLumiraPage() {
     rightScrollRef.current?.scrollTo({ top: rightScrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [chatMsgs]);
 
-  // When embed fires its load event, flush any query that arrived before it was ready
+  // SpotterEmbed fires onLoad once — flush any queued query
   const handleSpotterLoad = useCallback(() => {
-    setSpotterReady(true);
+    spotterReady.current = true;
     if (pendingQuery.current && spotterRef.current) {
       spotterRef.current.trigger(HostEvent.SpotterSearch, {
         query: pendingQuery.current, executeSearch: true,
@@ -443,24 +443,18 @@ export default function AskLumiraPage() {
 
   const sendToSpotter = useCallback((query: string) => {
     setActiveChip(query);
+    setSpotterActive(true);  // reveal the embed panel
 
-    if (!spotterActive) {
-      // First ever query — mount with searchOptions prop
-      setSpotterQuery(query);
-      setSpotterActive(true);
-      return;
-    }
-
-    // Subsequent queries — keep conversation alive, just send via HostEvent
-    if (spotterReady && spotterRef.current) {
+    if (spotterReady.current && spotterRef.current) {
+      // Embed already loaded — fire immediately via HostEvent (no remount)
       spotterRef.current.trigger(HostEvent.SpotterSearch, {
         query, executeSearch: true,
       });
     } else {
-      // Embed mounted but not ready yet — queue it
+      // Embed not ready yet — queue, will be flushed in onLoad
       pendingQuery.current = query;
     }
-  }, [spotterActive, spotterReady]);
+  }, []);
 
   const sendGeneral = useCallback(async (query: string) => {
     const uid = ++counterRef.current;
@@ -633,29 +627,25 @@ export default function AskLumiraPage() {
           </div>
         )}
 
-        {/* Spotter 3 embed — mounted once active, persists for conversation continuity */}
+        {/* Spotter 3 embed — always mounted with a stable key so it never remounts.
+            Hidden (display:none) until user sends a data question. All queries are
+            sent via HostEvent.SpotterSearch so props never change mid-session. */}
         <div style={{
           display: spotterActive ? 'flex' : 'none',
           flex: 1, flexDirection: 'column', overflow: 'hidden',
         }}>
-          {spotterActive && (
-            <SpotterEmbed
-              ref={spotterRef}
-              onLoad={handleSpotterLoad}
-              worksheetId={THOUGHTSPOT_MODEL_ID}
-              updatedSpotterChatPrompt
-              hideSourceSelection
-              hideSampleQuestions={false}
-              spotterChatConfig={{
-                hideToolResponseCardBranding: true,
-                toolResponseCardBrandingLabel: 'Lumira AI',
-              }}
-              hiddenActions={hiddenActions}
-              disabledActions={disabledActions}
-              {...(spotterQuery ? { searchOptions: { searchQuery: spotterQuery } } : {})}
-              style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-            />
-          )}
+          <SpotterEmbed
+            key="lumira-ask-persistent"
+            ref={spotterRef}
+            onLoad={handleSpotterLoad}
+            worksheetId={THOUGHTSPOT_MODEL_ID}
+            updatedSpotterChatPrompt
+            hideSourceSelection
+            hideSampleQuestions
+            hiddenActions={hiddenActions}
+            disabledActions={disabledActions}
+            style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+          />
         </div>
       </div>
 
