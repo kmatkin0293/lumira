@@ -411,7 +411,7 @@ export default function AskLumiraPage() {
   const pendingQuery  = useRef<string | null>(null);
 
   // Paywall — use a ref so the count is always fresh inside useCallback closures
-  const FREE_QUESTIONS   = 5;
+  const FREE_QUESTIONS   = 3;
   const questionCountRef = useRef(0);
   const [showUpgrade, setShowUpgrade] = useState(false);
 
