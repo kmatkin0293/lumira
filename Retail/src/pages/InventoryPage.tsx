@@ -426,7 +426,7 @@ export default function InventoryPage() {
           <CategoryRowItem
             key={cat.id}
             row={cat}
-            defaultOpen={i === 0}
+            defaultOpen={false}
             hiddenActions={hiddenActions}
             disabledActions={disabledActions}
             onError={onError}
